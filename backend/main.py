@@ -26,7 +26,29 @@ class ChatRequest(BaseModel):
 class ImageRequest(BaseModel):
     prompt: str
 
-# ... (lines 26-53 omitted)
+@app.get("/")
+async def root():
+    return {"message": "RunPod AI Backend is running"}
+
+@app.get("/api/model-status")
+async def get_model_status():
+    return model_manager.status
+
+def load_model_task(model_id: str, model_type: str):
+    try:
+        if model_type == "chat":
+            model_manager.load_chat_model(model_id)
+        elif model_type == "image":
+            model_manager.load_image_model(model_id)
+        elif model_type == "vision":
+            model_manager.load_vision_model(model_id)
+    except Exception as e:
+        print(f"Background load error: {e}")
+
+@app.post("/api/load-model")
+async def load_model(request: LoadModelRequest, background_tasks: BackgroundTasks):
+    background_tasks.add_task(load_model_task, request.model_id, request.model_type)
+    return {"message": f"Started loading model {request.model_id}"}
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
