@@ -9,9 +9,10 @@ const ModelSelector: React.FC = () => {
     const loadModel = async () => {
         if (!modelId) return;
         setIsLoading(true);
-        setStatus('Loading...');
+        setStatus('Initiating load...');
 
         try {
+            // Start loading
             const response = await fetch('http://localhost:8000/api/load-model', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -19,14 +20,32 @@ const ModelSelector: React.FC = () => {
             });
 
             if (response.ok) {
-                setStatus(`Loaded: ${modelId}`);
+                // Poll for status
+                const interval = setInterval(async () => {
+                    try {
+                        const statusRes = await fetch('http://localhost:8000/api/model-status');
+                        const statusData = await statusRes.json();
+
+                        setStatus(statusData.message);
+
+                        if (statusData.status === 'ready') {
+                            clearInterval(interval);
+                            setIsLoading(false);
+                        } else if (statusData.status === 'error') {
+                            clearInterval(interval);
+                            setIsLoading(false);
+                        }
+                    } catch (e) {
+                        console.error("Polling error", e);
+                    }
+                }, 1000);
             } else {
-                setStatus('Error loading model');
+                setStatus('Error starting load');
+                setIsLoading(false);
             }
         } catch (error) {
             console.error('Error:', error);
             setStatus('Connection error');
-        } finally {
             setIsLoading(false);
         }
     };

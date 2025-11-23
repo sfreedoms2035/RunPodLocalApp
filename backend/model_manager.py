@@ -12,8 +12,13 @@ class ModelManager:
         self.vision_model = None
         self.vision_processor = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.status = {"status": "idle", "message": "Ready"}
+
+    def set_status(self, status: str, message: str):
+        self.status = {"status": status, "message": message}
 
     def load_chat_model(self, model_id: str):
+        self.set_status("loading", f"Loading chat model: {model_id}...")
         print(f"Loading chat model: {model_id}...")
         try:
             self.chat_tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -23,8 +28,10 @@ class ModelManager:
                 device_map="auto"
             )
             print(f"Chat model {model_id} loaded.")
+            self.set_status("ready", f"Chat model {model_id} loaded.")
         except Exception as e:
             print(f"Error loading chat model: {e}")
+            self.set_status("error", f"Error: {str(e)}")
             raise e
 
     def generate_text(self, prompt: str, max_length: int = 200):
@@ -36,6 +43,7 @@ class ModelManager:
         return self.chat_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     def load_image_model(self, model_id: str):
+        self.set_status("loading", f"Loading image model: {model_id}...")
         print(f"Loading image model: {model_id}...")
         try:
             self.image_pipeline = StableDiffusionPipeline.from_pretrained(
@@ -44,8 +52,10 @@ class ModelManager:
             )
             self.image_pipeline.to(self.device)
             print(f"Image model {model_id} loaded.")
+            self.set_status("ready", f"Image model {model_id} loaded.")
         except Exception as e:
             print(f"Error loading image model: {e}")
+            self.set_status("error", f"Error: {str(e)}")
             raise e
 
     def generate_image(self, prompt: str):
@@ -56,6 +66,7 @@ class ModelManager:
         return image
 
     def load_vision_model(self, model_id: str):
+        self.set_status("loading", f"Loading vision model: {model_id}...")
         print(f"Loading vision model: {model_id}...")
         try:
             self.vision_processor = AutoProcessor.from_pretrained(model_id)
@@ -65,8 +76,10 @@ class ModelManager:
                 device_map="auto"
             )
             print(f"Vision model {model_id} loaded.")
+            self.set_status("ready", f"Vision model {model_id} loaded.")
         except Exception as e:
             print(f"Error loading vision model: {e}")
+            self.set_status("error", f"Error: {str(e)}")
             raise e
 
     def analyze_image(self, image_bytes: bytes, prompt: str = "Describe this image."):

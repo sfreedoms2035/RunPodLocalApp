@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from model_manager import model_manager
@@ -30,20 +30,25 @@ class ImageRequest(BaseModel):
 async def root():
     return {"message": "RunPod AI Backend is running"}
 
-@app.post("/api/load-model")
-async def load_model(request: LoadModelRequest):
+@app.get("/api/model-status")
+async def get_model_status():
+    return model_manager.status
+
+def load_model_task(model_id: str, model_type: str):
     try:
-        if request.model_type == "chat":
-            model_manager.load_chat_model(request.model_id)
-        elif request.model_type == "image":
-            model_manager.load_image_model(request.model_id)
-        elif request.model_type == "vision":
-            model_manager.load_vision_model(request.model_id)
-        else:
-            raise HTTPException(status_code=400, detail="Invalid model type")
-        return {"message": f"Model {request.model_id} loaded successfully"}
+        if model_type == "chat":
+            model_manager.load_chat_model(model_id)
+        elif model_type == "image":
+            model_manager.load_image_model(model_id)
+        elif model_type == "vision":
+            model_manager.load_vision_model(model_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Background load error: {e}")
+
+@app.post("/api/load-model")
+async def load_model(request: LoadModelRequest, background_tasks: BackgroundTasks):
+    background_tasks.add_task(load_model_task, request.model_id, request.model_type)
+    return {"message": f"Started loading model {request.model_id}"}
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
