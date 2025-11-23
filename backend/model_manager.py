@@ -13,7 +13,34 @@ import io
 from threading import Thread
 
 class ModelManager:
-    # ... (init and other methods)
+    def __init__(self):
+        self.chat_model = None
+        self.chat_tokenizer = None
+        self.image_pipeline = None
+        self.vision_model = None
+        self.vision_processor = None
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.status = {"status": "idle", "message": "Ready"}
+
+    def set_status(self, status: str, message: str):
+        self.status = {"status": status, "message": message}
+
+    def load_chat_model(self, model_id: str):
+        self.set_status("loading", f"Loading chat model: {model_id}...")
+        print(f"Loading chat model: {model_id}...")
+        try:
+            self.chat_tokenizer = AutoTokenizer.from_pretrained(model_id)
+            self.chat_model = AutoModelForCausalLM.from_pretrained(
+                model_id, 
+                torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                device_map="auto"
+            )
+            print(f"Chat model {model_id} loaded.")
+            self.set_status("ready", f"Chat model {model_id} loaded.")
+        except Exception as e:
+            print(f"Error loading chat model: {e}")
+            self.set_status("error", f"Error: {str(e)}")
+            raise e
 
     def generate_text_stream(self, messages: list, max_length: int = 2048):
         if not self.chat_model:
@@ -37,10 +64,6 @@ class ModelManager:
             yield new_text
 
     def generate_text(self, messages: list, max_length: int = 2048):
-        # Keep this for backward compatibility if needed, or just use stream
-        # But for now, I'll leave it or replace it. 
-        # The user wants streaming, so I'll focus on the stream method.
-        # I'll keep the old one just in case.
         if not self.chat_model:
             raise ValueError("Chat model not loaded.")
         
