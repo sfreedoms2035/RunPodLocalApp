@@ -23,6 +23,9 @@ class ChatRequest(BaseModel):
     messages: list
     max_length: int = 200
 
+class ImageRequest(BaseModel):
+    prompt: str
+
 # ... (lines 26-53 omitted)
 
 @app.post("/api/chat")
