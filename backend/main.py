@@ -21,7 +21,7 @@ class LoadModelRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list
-    max_length: int = 200
+    max_length: int = 2048
 
 class ImageRequest(BaseModel):
     prompt: str

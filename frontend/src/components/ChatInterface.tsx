@@ -19,7 +19,7 @@ const ChatInterface: React.FC = () => {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: newMessages }),
+                body: JSON.stringify({ messages: newMessages, max_length: 2048 }),
             });
             const data = await response.json();
             setMessages([...newMessages, { role: 'assistant', content: data.response }]);

@@ -41,7 +41,7 @@ class ModelManager:
             self.set_status("error", f"Error: {str(e)}")
             raise e
 
-    def generate_text(self, messages: list, max_length: int = 200):
+    def generate_text(self, messages: list, max_length: int = 2048):
         if not self.chat_model:
             raise ValueError("Chat model not loaded.")
         
