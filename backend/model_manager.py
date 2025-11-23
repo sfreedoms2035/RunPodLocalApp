@@ -1,3 +1,10 @@
+import os
+try:
+    import hf_transfer
+except ImportError:
+    os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+    print("hf_transfer not found. Disabling fast downloads.")
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForVision2Seq, AutoProcessor
 from diffusers import StableDiffusionPipeline
