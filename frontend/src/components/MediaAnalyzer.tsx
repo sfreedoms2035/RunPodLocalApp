@@ -23,7 +23,7 @@ const MediaAnalyzer: React.FC = () => {
         formData.append('file', selectedFile);
 
         try {
-            const response = await fetch('http://localhost:8000/api/analyze', {
+            const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData,
             });

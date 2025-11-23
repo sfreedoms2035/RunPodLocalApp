@@ -25,27 +25,6 @@ This guide details how to deploy the **RunPod AI Web App** on a RunPod GPU insta
 
 Once the Pod is **Running**:
 
-1.  Click **Connect**.
-2.  Copy the **SSH Command** (e.g., `ssh root@123.456.789.0 -p 12345 -i ~/.ssh/id_ed25519`).
-3.  **Modify the command** to set up Port Forwarding (Tunneling). We want to map the remote ports (Frontend: 5173, Backend: 8000) to your local machine.
-
-    ```powershell
-    # Syntax: -L [LocalPort]:localhost:[RemotePort]
-    ssh -L 5173:localhost:5173 -L 8000:localhost:8000 root@<IP_ADDRESS> -p <PORT> -i <PATH_TO_KEY>
-    ```
-
-    *Example:*
-    ```powershell
-    ssh -L 5173:localhost:5173 -L 8000:localhost:8000 root@194.23.45.67 -p 22055 -i ~/.ssh/id_ed25519
-    ssh -L 5173:localhost:5173 -L 8000:localhost:8000 root@@69.30.85.10 -p 22055 -i ~/.ssh/id_ed25519
-    ```
-
-4.  Run the command in your local terminal. You are now logged into the Pod.
-
-## Step 3: Setup the Application on RunPod
-
-Inside the SSH session:
-
 1.  **Install System Dependencies** (Optional but recommended):
     ```bash
     apt-get update && apt-get install -y git
@@ -97,7 +76,23 @@ Open your **local browser** and navigate to:
 - **Frontend**: [http://localhost:5173](http://localhost:5173)
 - **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-You can now use the app as if it were running locally, but all computation happens on the RunPod GPU!
+## Direct Public Access (No SSH Tunnel)
+
+If you prefer to access the app directly via the RunPod Public IP:
+
+1.  **Edit Pod Configuration**:
+    - In RunPod Console, stop the pod and click **Edit**.
+    - Add **Port 5173** to the "Exposed TCP Ports" list.
+    - Save and Start the pod.
+
+2.  **Find the Public Port**:
+    - Once running, expand the pod details.
+    - Find the **Public IP** and the **External Port** that maps to internal port **5173**.
+    - Example: `123.45.67.89:10234` -> `5173`.
+
+3.  **Access in Browser**:
+    - Open `http://<Public_IP>:<External_Port>` (e.g., `http://123.45.67.89:10234`).
+    - The app is configured to proxy API requests internally, so you **do not** need to expose port 8000 externally.
 
 ## Troubleshooting
 

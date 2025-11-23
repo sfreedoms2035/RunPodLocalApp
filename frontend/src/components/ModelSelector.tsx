@@ -13,7 +13,7 @@ const ModelSelector: React.FC = () => {
 
         try {
             // Start loading
-            const response = await fetch('http://localhost:8000/api/load-model', {
+            const response = await fetch('/api/load-model', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model_id: modelId, model_type: modelType }),
@@ -23,7 +23,7 @@ const ModelSelector: React.FC = () => {
                 // Poll for status
                 const interval = setInterval(async () => {
                     try {
-                        const statusRes = await fetch('http://localhost:8000/api/model-status');
+                        const statusRes = await fetch('/api/model-status');
                         const statusData = await statusRes.json();
 
                         setStatus(statusData.message);

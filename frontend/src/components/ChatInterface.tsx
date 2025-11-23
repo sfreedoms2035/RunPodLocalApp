@@ -16,7 +16,7 @@ const ChatInterface: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/chat', {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: input }),
@@ -37,8 +37,8 @@ const ChatInterface: React.FC = () => {
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'user'
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : 'bg-gray-800 text-gray-100 rounded-bl-none border border-gray-700'
+                            ? 'bg-blue-600 text-white rounded-br-none'
+                            : 'bg-gray-800 text-gray-100 rounded-bl-none border border-gray-700'
                             }`}>
                             {msg.content}
                         </div>
