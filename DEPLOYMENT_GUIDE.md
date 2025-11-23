@@ -37,6 +37,7 @@ Once the Pod is **Running**:
     *Example:*
     ```powershell
     ssh -L 5173:localhost:5173 -L 8000:localhost:8000 root@194.23.45.67 -p 22055 -i ~/.ssh/id_ed25519
+    ssh -L 5173:localhost:5173 -L 8000:localhost:8000 root@@69.30.85.10 -p 22055 -i ~/.ssh/id_ed25519
     ```
 
 4.  Run the command in your local terminal. You are now logged into the Pod.
@@ -97,3 +98,18 @@ Open your **local browser** and navigate to:
 - **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 You can now use the app as if it were running locally, but all computation happens on the RunPod GPU!
+
+## Troubleshooting
+
+### "destination path 'RunPodLocalApp' already exists"
+This means you already cloned the folder (perhaps when it was empty).
+**Fix**: Remove the folder and clone again:
+```bash
+rm -rf RunPodLocalApp
+git clone https://github.com/sfreedoms2035/RunPodLocalApp.git
+```
+
+### "cloned an empty repository"
+This means the code wasn't pushed to GitHub yet.
+**Fix**: We have now pushed the code. Just delete the folder and clone again as above.
+

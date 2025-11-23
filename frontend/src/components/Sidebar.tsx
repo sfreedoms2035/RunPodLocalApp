@@ -1,4 +1,5 @@
 import React from 'react';
+import ModelSelector from './ModelSelector';
 
 interface SidebarProps {
     activeTab: string;
@@ -32,8 +33,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
                     </button>
                 ))}
             </nav>
-            <div className="text-xs text-gray-600 mt-auto">
-                Running on RunPod
+
+            <div className="mt-auto">
+                <ModelSelector />
+                <div className="text-xs text-gray-600 mt-4 text-center">
+                    Running on RunPod
+                </div>
             </div>
         </div>
     );
