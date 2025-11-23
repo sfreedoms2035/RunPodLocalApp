@@ -50,11 +50,15 @@ async def load_model(request: LoadModelRequest, background_tasks: BackgroundTask
     background_tasks.add_task(load_model_task, request.model_id, request.model_type)
     return {"message": f"Started loading model {request.model_id}"}
 
+from fastapi.responses import StreamingResponse
+
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
     try:
-        response = model_manager.generate_text(request.messages, request.max_length)
-        return {"response": response}
+        return StreamingResponse(
+            model_manager.generate_text_stream(request.messages, request.max_length),
+            media_type="text/plain"
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

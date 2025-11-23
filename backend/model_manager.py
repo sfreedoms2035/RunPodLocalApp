@@ -6,42 +6,41 @@ except ImportError:
     print("hf_transfer not found. Disabling fast downloads.")
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForVision2Seq, AutoProcessor
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForVision2Seq, AutoProcessor, TextIteratorStreamer
 from diffusers import StableDiffusionPipeline
 from PIL import Image
 import io
+from threading import Thread
 
 class ModelManager:
-    def __init__(self):
-        self.chat_model = None
-        self.chat_tokenizer = None
-        self.image_pipeline = None
-        self.vision_model = None
-        self.vision_processor = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.status = {"status": "idle", "message": "Ready"}
+    # ... (init and other methods)
 
-    def set_status(self, status: str, message: str):
-        self.status = {"status": status, "message": message}
-
-    def load_chat_model(self, model_id: str):
-        self.set_status("loading", f"Loading chat model: {model_id}...")
-        print(f"Loading chat model: {model_id}...")
-        try:
-            self.chat_tokenizer = AutoTokenizer.from_pretrained(model_id)
-            self.chat_model = AutoModelForCausalLM.from_pretrained(
-                model_id, 
-                torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                device_map="auto"
-            )
-            print(f"Chat model {model_id} loaded.")
-            self.set_status("ready", f"Chat model {model_id} loaded.")
-        except Exception as e:
-            print(f"Error loading chat model: {e}")
-            self.set_status("error", f"Error: {str(e)}")
-            raise e
+    def generate_text_stream(self, messages: list, max_length: int = 2048):
+        if not self.chat_model:
+            raise ValueError("Chat model not loaded.")
+        
+        text = self.chat_tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        
+        inputs = self.chat_tokenizer(text, return_tensors="pt").to(self.device)
+        
+        streamer = TextIteratorStreamer(self.chat_tokenizer, skip_prompt=True, skip_special_tokens=True)
+        generation_kwargs = dict(**inputs, streamer=streamer, max_new_tokens=max_length)
+        
+        thread = Thread(target=self.chat_model.generate, kwargs=generation_kwargs)
+        thread.start()
+        
+        for new_text in streamer:
+            yield new_text
 
     def generate_text(self, messages: list, max_length: int = 2048):
+        # Keep this for backward compatibility if needed, or just use stream
+        # But for now, I'll leave it or replace it. 
+        # The user wants streaming, so I'll focus on the stream method.
+        # I'll keep the old one just in case.
         if not self.chat_model:
             raise ValueError("Chat model not loaded.")
         
@@ -54,7 +53,6 @@ class ModelManager:
         inputs = self.chat_tokenizer(text, return_tensors="pt").to(self.device)
         outputs = self.chat_model.generate(**inputs, max_new_tokens=max_length)
         
-        # Decode only the new tokens
         generated_ids = outputs[0][len(inputs.input_ids[0]):]
         return self.chat_tokenizer.decode(generated_ids, skip_special_tokens=True)
 
