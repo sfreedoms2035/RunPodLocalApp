@@ -30,27 +30,36 @@ Once the Pod is **Running**:
     apt-get update && apt-get install -y git
     ```
 
-2.  **Clone the Repository**:
+2.  **Clone the Repository (IMPORTANT: Use /workspace)**:
+    RunPod pods have a persistent volume at `/workspace`. Always work there so you don't lose files on restart.
     ```bash
+    cd /workspace
     git clone https://github.com/sfreedoms2035/RunPodLocalApp.git
     cd RunPodLocalApp
     ```
 
-3.  **Install Backend Dependencies**:
+3.  **Run the Setup Script**:
+    We have included a script to automatically install Node.js and all dependencies.
     ```bash
-    cd backend
-    pip install -r requirements.txt
+    chmod +x start.sh
+    ./start.sh
     ```
 
-4.  **Install Frontend Dependencies**:
-    Open a *new terminal tab* (or use `tmux`/`screen`), SSH in again, and run:
+    *Alternatively, you can install manually:*
     ```bash
-    # Install Node.js if not present (RunPod PyTorch templates usually have it, or install via nvm)
+    # Install Node.js
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     apt-get install -y nodejs
 
-    cd RunPodLocalApp/frontend
+    # Install Python Deps
+    cd backend
+    pip install -r requirements.txt
+    cd ..
+
+    # Install Node Deps
+    cd frontend
     npm install
+    cd ..
     ```
 
 ## Step 4: Start the Application
@@ -81,9 +90,13 @@ Open your **local browser** and navigate to:
 If you prefer to access the app directly via the RunPod Public IP:
 
 1.  **Edit Pod Configuration**:
-    - In RunPod Console, stop the pod and click **Edit**.
-    - Add **Port 5173** to the "Exposed TCP Ports" list.
-    - Save and Start the pod.
+    - Go to your **My Pods** dashboard.
+    - Click on the **Stop** button for your pod (this is required to edit ports).
+    - Once stopped, click the **Edit** button (pencil icon or "Edit" in the menu).
+    - Scroll down to the **"Exposed TCP Ports"** (or "HTTP Ports") field.
+    - Add `5173` to the list (e.g., if it says `8888`, change it to `8888,5173`).
+    - Click **Update Pod**.
+    - Click **Start** to turn the pod back on.
 
 2.  **Find the Public Port**:
     - Once running, expand the pod details.
