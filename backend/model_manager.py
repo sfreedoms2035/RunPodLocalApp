@@ -34,13 +34,22 @@ class ModelManager:
             self.set_status("error", f"Error: {str(e)}")
             raise e
 
-    def generate_text(self, prompt: str, max_length: int = 200):
+    def generate_text(self, messages: list, max_length: int = 200):
         if not self.chat_model:
             raise ValueError("Chat model not loaded.")
         
-        inputs = self.chat_tokenizer(prompt, return_tensors="pt").to(self.device)
-        outputs = self.chat_model.generate(**inputs, max_length=max_length)
-        return self.chat_tokenizer.decode(outputs[0], skip_special_tokens=True)
+        text = self.chat_tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        
+        inputs = self.chat_tokenizer(text, return_tensors="pt").to(self.device)
+        outputs = self.chat_model.generate(**inputs, max_new_tokens=max_length)
+        
+        # Decode only the new tokens
+        generated_ids = outputs[0][len(inputs.input_ids[0]):]
+        return self.chat_tokenizer.decode(generated_ids, skip_special_tokens=True)
 
     def load_image_model(self, model_id: str):
         self.set_status("loading", f"Loading image model: {model_id}...")
